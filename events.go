@@ -5,62 +5,72 @@ import (
 )
 
 //Event...
-type Event struct{
+type Event struct {
 	EventType int
-	EventCode int
-	Extra interface{}
+	Data      map[string]interface{}
+	EventLoop EventLoop
 }
 
 //event type
 const (
-	EventNormalKey = iota
-	EventSpecialKey 
+	EventNormalKey  = iota
+	EventSpecialKey
+	EventResize
+	EventTick
+	EventUnknown    = 9999
+	//TODO: mouse event capture
+)
+
+const (
+	EventDataFieldRune      = "rune"
+	EventDataFieldKey       = "key"
+	EventDataFieldWidth     = "width"
+	EventDataFieldHeight    = "height"
+	EventDataFieldTimestamp = "timestamp"
 )
 
 /**
 	event listener
 */
-type EventListener interface{
+type EventListener interface {
 	onEvent(eve Event) error
 }
 
-type EventListenerConfig struct{
-	TargetType byte
-	TargetCode int
-	Name string
+type EventListenerConfig struct {
+	TargetType  int
+	TargetCode  int
+	Name        string
 	IsScheduled bool
-	Interval time.Duration
+	Interval    time.Duration
 }
 
 /**
 	event loop
 **/
-type EventLoop interface{
-
+type EventLoop interface {
 	AddEventListener(config EventListenerConfig, eventListner EventListener)
 
 	eventChan() chan Event
+
+	Start()
+
+	Editor() Editor
 }
 
-type EventListenerKey struct{
-	Type byte
-	Code int
+type EventListenerKey struct {
+	Type int
 	Name string
 }
 
-
-type CommondContext struct{
-	Key rune
-	Eve Event
+type CommandContext struct {
+	Key   rune
+	Eve   Event
 	Extra map[string]interface{}
 }
 
-type CommondResult map[string]interface{}
+type CommandResult map[string]interface{}
 
-type Commond interface{
-	Handle(context CommondContext) (CommondResult, error)
+type Command interface {
+	Handle(context CommandContext) (CommandResult, error)
 	Type() int
 }
-
-
-
